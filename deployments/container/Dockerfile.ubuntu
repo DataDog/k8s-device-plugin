@@ -1,3 +1,7 @@
+############
+# Modified #
+############
+#
 # Copyright (c) 2019-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GOLANG_VERSION=1.20.5
+ARG BASE_IMAGE
+
 ARG CUDA_IMAGE=cuda
 ARG CUDA_VERSION=12.2.0
 ARG BASE_DIST=ubuntu20.04
@@ -23,15 +28,15 @@ RUN apt-get update && \
     && \
     rm -rf /var/lib/apt/lists/*
 
-ARG GOLANG_VERSION=x.x.x
+ARG GOLANG_VERSION=1.20.5
 RUN set -eux; \
     \
     arch="$(uname -m)"; \
     case "${arch##*-}" in \
-        x86_64 | amd64) ARCH='amd64' ;; \
-        ppc64el | ppc64le) ARCH='ppc64le' ;; \
-        aarch64) ARCH='arm64' ;; \
-        *) echo "unsupported architecture" ; exit 1 ;; \
+    x86_64 | amd64) ARCH='amd64' ;; \
+    ppc64el | ppc64le) ARCH='ppc64le' ;; \
+    aarch64) ARCH='arm64' ;; \
+    *) echo "unsupported architecture" ; exit 1 ;; \
     esac; \
     wget -nv -O - https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-${ARCH}.tar.gz \
     | tar -C /usr/local -xz
@@ -47,10 +52,9 @@ ARG VERSION="N/A"
 ARG GIT_COMMIT="unknown"
 RUN make PREFIX=/artifacts cmds
 
-FROM nvidia/${CUDA_IMAGE}:${CUDA_VERSION}-base-${BASE_DIST}
+FROM $BASE_IMAGE
 
-# Remove CUDA libs(compat etc) in favor of libs installed by the NVIDIA driver
-RUN apt-get --purge -y autoremove cuda-*
+USER root
 
 ENV NVIDIA_DISABLE_REQUIRE="true"
 ENV NVIDIA_VISIBLE_DEVICES=all
@@ -68,7 +72,7 @@ LABEL release="N/A"
 LABEL summary="NVIDIA device plugin for Kubernetes"
 LABEL description="See summary"
 
-RUN mkdir /licenses && mv /NGC-DL-CONTAINER-LICENSE /licenses/NGC-DL-CONTAINER-LICENSE
+COPY --from=build /NGC-DL-CONTAINER-LICENSE /licenses/NGC-DL-CONTAINER-LICENSE
 
 COPY --from=build /artifacts/config-manager       /usr/bin/config-manager
 COPY --from=build /artifacts/nvidia-device-plugin /usr/bin/nvidia-device-plugin
@@ -76,9 +80,9 @@ COPY --from=build /artifacts/nvidia-device-plugin /usr/bin/nvidia-device-plugin
 # Install / upgrade packages here that are required to resolve CVEs
 ARG CVE_UPDATES
 RUN if [ -n "${CVE_UPDATES}" ]; then \
-        rm -f /etc/apt/sources.list.d/cuda.list && \
-        apt-get update && apt-get upgrade -y ${CVE_UPDATES} && \
-        rm -rf /var/lib/apt/lists/*; \
+    rm -f /etc/apt/sources.list.d/cuda.list && \
+    apt-get update && apt-get upgrade -y ${CVE_UPDATES} && \
+    rm -rf /var/lib/apt/lists/*; \
     fi
 
 ENTRYPOINT ["nvidia-device-plugin"]
