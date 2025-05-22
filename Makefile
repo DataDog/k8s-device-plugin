@@ -44,6 +44,8 @@ CLI_VERSION = $(VERSION)
 endif
 CLI_VERSION_PACKAGE = github.com/NVIDIA/k8s-device-plugin/internal/info
 
+PREFIX_DIR := $(if $(PREFIX),$(PREFIX),.)
+
 binaries: cmds
 ifneq ($(PREFIX),)
 cmd-%: COMMAND_BUILD_OPTIONS = -o $(PREFIX)/$(*)
@@ -53,13 +55,13 @@ EXTLDFLAGS = -Wl,--export-dynamic -Wl,--unresolved-symbols=ignore-in-object-file
 else
 EXTLDFLAGS = -Wl,-undefined,dynamic_lookup
 endif
-BUILDFLAGS = -ldflags "-s -w '-extldflags=$(EXTLDFLAGS)' -X $(CLI_VERSION_PACKAGE).gitCommit=$(GIT_COMMIT) -X $(CLI_VERSION_PACKAGE).version=$(CLI_VERSION)"
+BUILDFLAGS = -tags fips -ldflags "-w '-extldflags=$(EXTLDFLAGS)' -X $(CLI_VERSION_PACKAGE).gitCommit=$(GIT_COMMIT) -X $(CLI_VERSION_PACKAGE).version=$(CLI_VERSION)"
 build:
-	go build $(BUILDFLAGS) ./...
+	CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build $(BUILDFLAGS) ./...
 
 cmds: $(CMD_TARGETS)
 $(CMD_TARGETS): cmd-%:
-	go build $(BUILDFLAGS) $(COMMAND_BUILD_OPTIONS) $(MODULE)/cmd/$(*)
+	CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build $(BUILDFLAGS) $(COMMAND_BUILD_OPTIONS) $(MODULE)/cmd/$(*) && go tool nm $(PREFIX_DIR)/$* | grep -E 'sig.FIPSOnly'
 
 examples: $(EXAMPLE_TARGETS)
 $(EXAMPLE_TARGETS): example-%:
