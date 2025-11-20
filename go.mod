@@ -6,13 +6,13 @@ toolchain go1.24.1
 
 require (
 	github.com/NVIDIA/go-gpuallocator v0.5.0
-	github.com/NVIDIA/go-nvlib v0.7.1
+	github.com/NVIDIA/go-nvlib v0.7.2
 	github.com/NVIDIA/go-nvml v0.12.4-1
-	github.com/NVIDIA/nvidia-container-toolkit v1.17.5
+	github.com/NVIDIA/nvidia-container-toolkit v1.17.9
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/google/renameio v1.0.1
 	github.com/google/uuid v1.6.0
-	github.com/opencontainers/selinux v1.11.1
+	github.com/opencontainers/selinux v1.13.1
 	github.com/prometheus/procfs v0.15.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
@@ -34,6 +34,7 @@ require (
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
+	github.com/cyphar/filepath-securejoin v0.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.11.3 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
