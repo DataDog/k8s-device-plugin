@@ -1,6 +1,6 @@
 module github.com/NVIDIA/k8s-device-plugin/deployments/devel
 
-go 1.23
+go 1.25.5
 
 require github.com/matryer/moq v0.5.1
 
