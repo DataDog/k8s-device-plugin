@@ -21,6 +21,7 @@ COPY --from=build /artifacts/gpu-feature-discovery  /usr/bin/gpu-feature-discove
 COPY --from=build /artifacts/mps-control-daemon     /usr/bin/mps-control-daemon
 COPY --from=build /artifacts/nvidia-device-plugin   /usr/bin/nvidia-device-plugin
 
-USER root
+# user root has UID 0
+USER 0
 
 ENTRYPOINT ["nvidia-device-plugin"]
